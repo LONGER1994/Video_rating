@@ -26,8 +26,8 @@ with open("movie_data.csv", "w", newline="") as csv_file:
         [
             "Title",
             "Rating",
-            # "Cast",
-            # "Release Year"
+            "Release Year",
+            #  "Cast"
         ]
     )
 
@@ -38,36 +38,54 @@ with open("movie_data.csv", "w", newline="") as csv_file:
 
     # 遍歷每個影片元素，並提取相關資訊
     for movie in movie_elements:
-        title = movie.find(
-            "h3",
-            class_="ipc-title__text",
-        ).get_text()
-        rating = movie.find(
-            "span",
-            class_="ipc-rating-star ipc-rating-star--base ipc-rating-star--imdb ratingGroup--imdb-rating",
-        ).get_text()
+        title = (
+            movie.find(
+                "h3",
+                class_="ipc-title__text",
+            )
+            .get_text()
+            .split(" ")[1:]
+        )
+        title = " ".join(title)
 
-        # # 找到演員列表，通常在<div>標籤中
-        # actors_element = movie.find("div", class_="list-description")
-        # if actors_element:
-        #     actors = actors_element.get_text(strip=True)
-        # else:
-        #     actors = "演員資訊不可用"
+        rating = (
+            movie.find(
+                "span",
+                class_="ipc-rating-star ipc-rating-star--base ipc-rating-star--imdb ratingGroup--imdb-rating",
+            )
+            .get_text()
+            .split("\xa0")[0]
+        )
 
-        # # 找到上映年份，通常在<span>標籤中
-        # year_element = movie.find("span", class_="list-description-year")
-        # if year_element:
-        #     year = year_element.get_text()
+        # # 找到演員列表
+        # find_a_tag = movie.find("a", class_="ipc-title-link-wrapper")
+        # if find_a_tag:
+        #     movie_url = "https://www.imdb.com" + find_a_tag.get("href")
+        #     movie_response = requests.get(movie_url, headers=headers)
+        #     movie_soup = BeautifulSoup(movie_response.text, "html.parser")
+        #     cast = movie_soup.find_all(
+        #         "a",
+        #         class_="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link",
+        #     )
         # else:
-        #     year = "上映年份不可用"
+        #     cast = "演員資訊不可用"
+
+        # 找到上映年份，通常在<span>標籤中
+        year_element = movie.find(
+            "span", class_="sc-c7e5f54-8 hgjcbi cli-title-metadata-item"
+        )
+        if year_element:
+            year = year_element.get_text()
+        else:
+            year = "上映年份不可用"
 
         # 寫入該部影片的資訊到CSV檔案
         csv_writer.writerow(
             [
                 title,
                 rating,
-                # actors,
-                # year
+                year,
+                # cast,
             ]
         )
 
