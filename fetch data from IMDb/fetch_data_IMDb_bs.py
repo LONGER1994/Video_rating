@@ -12,6 +12,7 @@ headers = {
 
 # 發送HTTP請求並取得網頁內容
 response = requests.get(url, headers=headers)
+response.raise_for_status()
 
 # 使用Beautiful Soup解析網頁內容
 soup = BeautifulSoup(response.text, "html.parser")
@@ -27,7 +28,8 @@ with open("movie_data.csv", "w", newline="") as csv_file:
             "Title",
             "Rating",
             "Release Year",
-            #  "Cast"
+            #  "Cast",
+            "Poster",
         ]
     )
 
@@ -57,6 +59,15 @@ with open("movie_data.csv", "w", newline="") as csv_file:
             .split("\xa0")[0]
         )
 
+        # 找到上映年份，通常在<span>標籤中
+        year_element = movie.find(
+            "span", class_="sc-c7e5f54-8 hgjcbi cli-title-metadata-item"
+        )
+        if year_element:
+            year = year_element.get_text()
+        else:
+            year = "上映年份不可用"
+
         # # 找到演員列表
         # find_a_tag = movie.find("a", class_="ipc-title-link-wrapper")
         # if find_a_tag:
@@ -70,14 +81,12 @@ with open("movie_data.csv", "w", newline="") as csv_file:
         # else:
         #     cast = "演員資訊不可用"
 
-        # 找到上映年份，通常在<span>標籤中
-        year_element = movie.find(
-            "span", class_="sc-c7e5f54-8 hgjcbi cli-title-metadata-item"
-        )
-        if year_element:
-            year = year_element.get_text()
+        # 找到海報連結
+        poster_element = movie.find("img", class_="ipc-image")
+        if poster_element:
+            poster = poster_element.get("src")
         else:
-            year = "上映年份不可用"
+            poster = "沒有電影海報"
 
         # 寫入該部影片的資訊到CSV檔案
         csv_writer.writerow(
@@ -86,6 +95,7 @@ with open("movie_data.csv", "w", newline="") as csv_file:
                 rating,
                 year,
                 # cast,
+                poster,
             ]
         )
 
